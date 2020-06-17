@@ -1,0 +1,180 @@
+
+#include<bits/stdc++.h>
+using namespace std;
+
+#define ff              first
+#define ss              second
+#define int             long long
+#define pb              push_back
+#define mp              make_pair
+#define pii             pair<int,int>
+#define vi              vector<int>
+#define mii             map<int,int>
+#define pqb             priority_queue<int>
+#define pqs             priority_queue<int,vi,greater<int> >
+#define setbits(x)      __builtin_popcountll(x)
+#define zrobits(x)      __builtin_ctzll(x)
+#define mod             1000000007
+#define inf             1e18
+#define ps(x,y)         fixed<<setprecision(y)<<x
+mt19937                 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+
+void c_p_c()
+{
+  ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#ifndef ONLINE_JUDGE
+  freopen("input.txt", "r", stdin);
+  freopen("output.txt", "w", stdout);
+#endif
+}
+const int MAXN = 1e5 + 1;
+int a[MAXN];
+struct seg
+{
+  int val;
+  int odd;
+  int even;
+}seg[4*MAXN + 1];
+
+void build(int start,int end,int idx)
+{
+  if(start == end)
+  {
+    seg[idx].val = a[start];
+    if(a[start]&1)
+    {
+      seg[idx].odd = 1;
+      seg[idx].even = 0;
+    }
+    else
+    {
+      seg[idx].even = 1;
+      seg[idx].odd = 0;
+    }
+    return ;
+  }
+
+  int mid = start + ((end-start)/2);
+
+  build(start,mid,2*idx + 1);
+  build(mid+1,end,2*idx + 2);
+
+  seg[idx].odd = seg[2*idx + 1].odd + seg[2*idx + 2].odd;
+
+  seg[idx].even = seg[2*idx + 1].even + seg[2*idx + 2].even;
+
+  return ; 
+}
+
+int queryodd(int start,int end,int l,int r,int idx)
+{
+    if(l <= start && r >= end)
+    {
+      return seg[idx].odd;
+    }
+    if(start > r || end < l)
+    {
+      return 0;
+    }
+
+    int mid = start + ((end-start)/2);
+    int lans = queryodd(start,mid,l,r,2*idx + 1);
+    int rans = queryodd(mid+1,end,l,r,2*idx + 2);
+
+    return lans + rans;
+}
+
+int queryeven(int start,int end,int l,int r,int idx)
+{
+    if(l <= start && r >= end)
+    {
+      return seg[idx].even;
+    }
+    if(start > r || end < l)
+    {
+      return 0;
+    }
+
+    int mid = start + ((end-start)/2);
+    int lans = queryeven(start,mid,l,r,2*idx + 1);
+    int rans = queryeven(mid+1,end,l,r,2*idx + 2);
+
+    return lans + rans;
+}
+void update(int start,int end,int idx,int pos,int upd)
+{
+
+  if(start == end)
+  {
+    seg[idx].val = upd;
+    if(upd&1)
+    {
+      seg[idx].odd = 1;
+      seg[idx].even = 0;
+    }
+    else
+    {
+      seg[idx].odd = 0;
+      seg[idx].even = 1;
+    }
+    return ;
+  }
+
+  int mid = start + ((end-start)/2);
+  if(pos <= mid)
+  {
+    update(start,mid,2*idx + 1,pos,upd);
+  }
+  else
+  {
+    update(mid+1,end,2*idx + 2,pos,upd);
+  }
+  seg[idx].even = seg[2*idx + 1].even + seg[2*idx + 2].even;
+  seg[idx].odd = seg[2*idx + 1].odd + seg[2*idx + 2].odd;
+  return ;
+}
+int32_t main()
+{
+  c_p_c();
+
+  int n;
+  cin >> n;
+
+  for(int i=0;i<n;i++)
+  {
+    cin >> a[i];
+  }
+
+  build(0,n-1,0);
+
+  int q;
+  cin >> q;
+  while(q--)
+  {
+    int t,x,y;
+    cin >> t >> x >> y;
+
+    if(t == 0)
+    {
+      // MODIFY x to y
+      x--;
+      update(0,n-1,0,x,y);
+
+    }
+    else if(t == 1)
+    {
+      // even number count
+      x--,y--;
+      cout<<queryeven(0,n-1,x,y,0)<<endl;
+    }
+    else
+    {
+      // odd count
+      x--,y--;
+      cout<<queryodd(0,n-1,x,y,0)<<endl;
+    }
+  }
+  return 0;
+}
+
